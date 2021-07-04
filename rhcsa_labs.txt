@@ -1,0 +1,427 @@
+labs:
+
+4-3:
+    find -mmin -300 | xargs file
+4-4:
+    find /usr -atime -100 -size -5M -user root
+5-3:
+    useradd -u 4100 -b /usr user4100
+    useradd user4200
+5-4:
+    echo "fuck off" > /etc/nologin.txt
+    useradd -s /usr/sbin/nologin user4300
+6-1:
+    groupadd -g 6000 lnxgrp
+    useradd -m -u 5000 -g 6000 user5000
+    passwd user5000
+    chage -m 4 -M 30 -W 10 -E 2021-12-20 user5000
+6-2:
+    passwd -l user5000
+    usermod -U user5000
+6-3:
+    groupmod -g 7000 -n dbagrp lnxgrp
+    useradd -m user1000
+    useradd -m user2000
+    usermod -a -G 7000 user1000
+    usermod -a -G 7000 user2000
+6-4:
+    visudo
+    user5000        ALL=(ALL)       NOPASSWD: ALL
+6-5:
+    touch f6
+    mkdir d6
+    useradd -m user90
+    groupadd g1
+    chown user90: f6
+    chown :dba f6
+    chown user90:g1 -R d6/
+7-1:
+    # in .bash_profile
+    export PS1="<\u@\h in $(pwd) >: "
+7-2:
+    ls /etc /dvd /var 2>/tmp/ioerror
+8-1:
+    pgrep top
+    nice -n+8 top
+    sudo renice -n -10 36186
+8-2:
+    45 15 3 7 sat echo "Hello World" > /dev/pts/0
+9-1:
+    mount -oloop /dev/cdrom /mnt/iso/
+    find . -iname "*zsh*.rpm"
+    rpm -ivh ./BaseOS/Packages/zsh-5.5.1-6.el8_1.2.x86_64.rpm
+    rpmkeys -K ./BaseOS/Packages/zsh-5.5.1-6.el8_1.2.x86_64.rpm
+    rpm -qi ./BaseOS/Packages/zsh-5.5.1-6.el8_1.2.x86_64.rpm
+    rpm -Vv ./BaseOS/Packages/zsh-5.5.1-6.el8_1.2.x86_64.rpm
+9-2:
+     rpm -qi setup
+     rpm -qc setup
+     rpm -qi ./BaseOS/Packages/zlib-devel-1.2.11-16.el8_2.x86_64.rpm
+     rpm --reinstall -ivh ./BaseOS/Packages/zsh-5.5.1-6.el8_1.2.x86_64.rpm
+     rpm  -e zsh
+10-1:
+    dnf config-manager --add-repo=/mnt/iso/BaseOS
+    dnf config-manager --add-repo=/mnt/iso/AppStream
+10-2:
+    dnf provides /etc/group
+    dnf install httpd
+    cat /var/log/dnf.log | grep httpd
+    dnf info httpd
+    dnf deplist httpd
+    dnf remove httpd -y
+10-3:
+    dnf grouplist
+    dnf groupinstall "Scientific Support" "Security Tools"
+    cat /var/log/dnf.log | grep groupinstall
+    dnf groupinfo "Scientific Support"
+    dnf groupremove "Scientific Support"
+10-4:
+    dnf module list
+    dnf module install php
+    dnf module remove php
+10-5:
+    # Fehlt da was?!
+    dnf module list postgresql
+    dnf module reset postgresql:9.6
+    dnf module reset postgresql:10
+    dnf module install postgresql:9.6/client
+11-1:
+    # remove quiet from /etc/default/grub
+    find /boot/ -iname "grub*.cfg"
+    grub2-mkconfig -o /boot/grub2/grub.cfg
+
+11-2:
+    # reset
+    # press e when grub is displayed
+    # add rd.break to cmdline
+    # in emergency shell:
+    mount -oremount,rw /sysroot
+    chroot /sysroot
+    # just to verify selinux is disabled
+    getenforce 
+    passwd
+    touch /.autorelabel
+    exit
+    reboot
+11-3:
+    # bullshit, use dnf
+    # for protocol: download from here: https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.4/x86_64/packages
+    # dnf install kernel-<someversion>.rpm
+12-1:
+    systemctl get-default
+    systemctl list-units | grep .target
+    systemctl set-default multi-user.target
+12-2:
+    logger "This is $LOGNAME adding this marker on $(date)
+    sudo grep "adding this marker" /var/log/messages
+12-3:
+    tuned-adm active
+    tuned-adm list
+    tuned-adm recommend
+    sudo tuned-adm profile balanced
+    tuned-adm active
+13-1:
+    sudo fdisk /dev/sde
+    o
+    p
+    n
+    Partition number (1-128, default 1):
+    First sector (2048-511966, default 2048):
+    Last sector, +sectors or +size{K,M,G,T,P} (2048-511966, default 511966): +100M
+    Created a new partition 1 of type 'Linux filesystem' and of size 100 MiB.
+    # With parted:
+    sudo parted
+    select /dev/sde
+    mklabel msdos
+    mkpart primary 0 100M
+    quit
+13-2:
+    sudo gdisk /dev/sdd
+    n
+    80M
+13-3:
+    sudo vdo create --device /dev/sdf --vdoLogicalSize=16G -n testvdo --vdoSlabSize=128
+    sudo vdostats
+    sudo lsblk
+13-4:
+    sudo vdo disableCompression -n testvdo
+    sudo vdo disableDeduplication -n testvdo
+    sudo vdostats -a
+    sudo vdo enableCompression -n testvdo
+    sudo vdo enableDeduplication -n testvdo
+    sudo vdostats -a
+14-1:
+    sudo pvcreate /dev/sdd
+    sudo vgcreate -s 16M vg100 /dev/sdd
+    sudo lvcreate -n lvol0 -L+100M vg100
+    sudo lvcreate -n swapvol -L+120M vg100
+    sudo pvs
+    sudo vgs
+    sudo lvs
+14-2:
+    sudo -i
+    sudo parted /dev/sdc
+    sudo pvcreate /dev/sdc1
+    sudo vgextend vg100 /dev/sdc1
+    sudo lvextend -L+200M -n /dev/mapper/vg100-lvol0
+    sudo pvs
+    sudo vgs
+    sudo lvs
+14-3:
+    sudo lvreduce --size=80M /dev/vg100/lvol0
+    sudo lvremove /dev/vg100/lvol0
+    sudo lvremove /dev/vg100/swapvol
+    sudo vgs
+    sudo lvs
+14-4:
+    sudo vgremove vg100
+    sudo pvs
+    sudo pvremove /dev/sdc1
+    sudo pvremove /dev/sdd
+    sudo vgs
+    sudo pvs
+14-5:
+    sudo dnf install stratisd stratis-cli
+    sudo systemctl enable --now stratisd
+    sudo lsblk
+    sudo stratis pool create strpool /dev/sdg
+    stratis pool list
+14-6:
+    sudo stratis pool add-data strpool /dev/sdh
+    stratis pool list
+    sudo stratis pool destroy strpool
+    stratis pool list
+15-1:
+    sudo cfdisk /dev/sdb
+    lsblk
+    sudo mkfs.vfat /dev/sdb1
+    sudo mkfs.ext4 /dev/sdb2
+    sudo mkfs.xfs /dev/sdb3
+    sudo mkdir /vfatfs5 /ext4fs5 /xfsfs5
+    lsblk /dev/sdb -o NAME,UUID
+    sudo vim /etc/fstab
+    #UUID=A83D-4FDE /vfatfs5 vfat    defaults        0       0
+    #UUID=a2b4d1c2-4f96-4af8-8080-0e04a16b99aa       /ext4fs5        ext4    defaults        0       0
+    #UUID=e067c330-8bbc-4c3b-a413-492181c25eee       /xfsfs5 xfs     defaults        0       0
+    sudo mount -a
+    df -h
+15-2:
+    sudo vdo create  --vdoSlabSize=128 --vdoLogicalSize=16G --device=/dev/sdf --name=vdo5
+    lsblk
+    sudo vdostats
+    sudo mkfs.xfs /dev/mapper/vdo5
+    sudo mkdir /vdofs5
+    sudo vim /etc/fstab
+    #/dev/mapper/vdo5 /vdofs5        xfs     _netdev 0       0
+    mount -a
+15-3:
+    lsblk
+    sudo pvs
+    sudo pvcreate /dev/sdd
+    sudo vgcreate -s 8m vg200 /dev/sdd
+    sudo lvcreate -n lv200 --size=120M vg200
+    sudo lvcreate -n lv300 --size=100M vg200
+    sudo vgs
+    sudo lvs
+    sudo mkfs.ext4 /dev/mapper/vg200-lv200
+    sudo mkfs.xfs /dev/mapper/vg200-lv300
+    sudo mkdir /lvmfs5 /lvmfs6
+    sudo vim /etc/fstab
+    #/dev/vg200/lv200 /lvmfs5        ext4    defaults        0       0
+    #/dev/vg200/lv300 /lvmfs6        xfs     defaults        0       0
+    df -h
+15-4:
+    lsblk
+    sudo pvcreate /dev/sdc
+    sudo vgextend vg200 /dev/sdc
+    sudo lvextend -r --size=200M /dev/vg200/lv200
+    sudo lvextend -r --size=250M /dev/vg200/lv300
+    sudo lvs
+    df -h
+15-5:
+    sudo stratis pool create strpool5 /dev/sdg
+    sudo stratis filesystem create strpool5 strfs5
+    sudo mkdir /strfs5
+    stratis filesystem
+    lsblk -o UUID /stratis/strpool5/strfs5
+    sudo vim /etc/fstab
+    #UUID=c1f4f167-e202-4928-a92c-59a447e0fa21 /strfs5       xfs     x-systemd.requires=stratisd.service     0       0
+    df -h
+15-6:
+    sudo parted /dev/sde
+    mklabel msdos
+    mkpart primary 0 100 
+    mkpart primary linux-swap 100 200
+    quit
+    sudo mkswap -L swappart /dev/sde2
+    sudo vim /etc/fstab
+    #UUID=b9d7bbe6-0686-4bbb-99b4-f66d1293ac97       none    swap    defaults        0       0
+    sudo swapon -a
+    sudo swapon -s
+    sudo pvcreate /dev/sde1
+    sudo vgextend vg200 /dev/sde1
+    # should be 180M but I didn't have enough space left
+    sudo lvcreate -n swapvol --size=120M vg200
+    sudo mkswap /dev/vg200/swapvol
+    sudo vim /etc/fstab
+    #/dev/vg200/swapvol      none    swap    defaults        0       0
+    sudo swapon -a
+16-1:
+    sudo nmcli con add con-name enp0s8 ifname enp0s8 type ethernet ip4 192.168.0.210/24 gw4 192.168.0.1
+    sudo nmcli connection modify enp0s8 connection.autoconnect true
+    sudo nmcli con down enp0s8
+    sudo nmcli con up enp0s8
+16-2:
+    sudo cp /etc/sysconfig/network-scripts/ifcfg-enp0s3 /etc/sysconfig/network-scripts/ifcfg-enp0s8
+    sudo systemctl restart NetworkManager
+17-1:
+    # server10
+    sudo mkdir /sharenfs
+    systemctl enable --now nfs-server
+    sudo exportfs server20.example.com:/sharenfs
+    sudo exportfs -s
+    sudo vim /etc/exports
+    sudo systemctl restart nfs-server
+    sudo firewall-cmd --add-service nfs --permanent
+    sudo  firewall-cmd --reload
+    # server20
+    sudo dnf install autofs
+    sudo mkdir /mntauto
+    # just to test
+    sudo mount -tnfs server10.example.com:/sharenfs /mntauto
+    sudo umount /mntauto
+    sudo vim /etc/auto.master.d/mntauto.dir
+    #/mntauto server10.example.com:/sharenfs
+    sudo vim /etc/auto.master
+    #/- /etc/auto.master.d/mntauto.dir
+    sudo systemctl enable --now autofs
+17-2:
+    sudo mkdir /autoindir
+    sudo vim /etc/auto.master
+    #/autoindir /etc/auto.indir
+    sudo vim /etc/auto.indir
+    #sharenfs         server10.example.com:/sharenfs
+    sudo systemctl restart autofs
+    ls /autoindir/sharenfs
+18-1:
+    date
+    timedatectl
+    sudo timedatectl set-time 23:45:00
+    timedatectl
+    timedatectl set-ntp true
+18-2:
+    sudo dnf install chrony
+    sudo systemctl enable --now chronyd
+19-1:
+    sudo useradd -m user20
+    sudo passwd user20
+    # on server10
+    ssh-keygen
+    ssh-copy-id server20.example.com
+19-2:
+    sudo vim /etc/ssh/sshd_config
+    #PermitRootLogin no
+    sudo systemctl restart ssh
+    ssh root@server20
+20-1:
+    sudo firewall-cmd --add-service=https  --permanent
+    sudo firewall-cmd --reload
+    sudo cat /etc/firewalld/zones/public.xml
+    sudo firewall-cmd --list-services
+20-1:
+    sudo firewall-cmd --zone=trusted --add-port=8000-8005/udp --permanent
+    sudo firewall-cmd --reload
+    sudo firewall-cmd --list-ports --zone=trusted
+21-1:
+    sudo setenforce 0
+    sudo getenforce
+    sudo setenforce 1
+21-2:
+    mkdir -p /tmp/d1/d2
+    ls -lZ /tmp/d1
+    ls -lZ /tmp/d1/d2
+    sudo chcon -Rv -t etc_t /tmp/d1/
+    sudo semanage fcontext -l | grep d1
+    sudo semanage fcontext -a -t etc_t '/tmp/d1/(.*)?'
+    21-3:
+    sudo semanage port -m 9001 --proto tcp --type http_port_t
+21-4:
+    touch /tmp/sef1
+    sudo cp /tmp/sef1 /usr/local/
+    ls -Z /tmp/sef1
+    ls -Z /usr/local/sef1
+    touch /tmp/sef2
+    sudo cp --preserve=context /tmp/sef2 /usr/local/
+    ls -Z /tmp/sef2
+    ls -Z /usr/local/sef2
+21-5:
+    sudo semanage boolean  -l | grep ssh_use
+    #OR
+    getsebool ssh_use_tcpd
+    sudo setsebool ssh_use_tcpd on
+22-1:
+    #!/bin/bash
+    DISKS=$@
+
+    if [ $(id -u) -ne 0 ]; then
+        echo "not running as root"
+        exit 256
+    fi
+
+    VGDISKS=""
+    for DISK in $DISKS; do
+        parted -s $DISK mklabel msdos
+        parted -s $DISK unit MB
+        parted -s $DISK mkpart primary 0 800
+        pvcreate ${DISK}1
+        VGDISKS="${DISK}1 $VGDISKS"
+    done
+
+    vgcreate vgscript $VGDISKS
+
+    for i in $(seq 1 3); do
+        lvcreate -n lvscript$i --size=500 vgscript
+    done
+22-2:
+    #!/bin/bash
+
+    XFSLV=$1
+    EXT4LV=$2
+    VFATLV=$3
+
+    if [ $(id -u) -ne 0 ]; then
+        echo "not running as root"
+        exit 256
+    fi
+
+    mkdir /mnt/xfs
+    mkfs.xfs $XFSLV
+    mount $XFSLV /mnt/xfs
+    mkdir /mnt/ext4
+    mkfs.ext4 $EXT4LV
+    mount $EXT4LV /mnt/ext4
+    mkdir /mnt/vfat
+    mkfs.vfat $VFATLV
+    mount $VFATLV /mnt/vfat
+
+    df -h
+22-3:
+    #!/bin/bash
+
+    if [ $(id -u) -ne 0 ]; then
+        echo "not running as root"
+        exit 256
+    fi
+
+    CONNAME=$1
+    HOSTNAME=$2
+
+    nmcli connection add con-name $CONNAME ifname enp0s9 type ethernet ipv4 192.168.0.123/24 gw4 192.168.0.1
+
+    if grep -q ${HOSTNAME} /etc/hosts; then
+        echo "found entry, skipping"
+    else
+        echo $HOSTNAME >> /etc/hosts
+    fi
+23-1:
+    useradd -m conadm
