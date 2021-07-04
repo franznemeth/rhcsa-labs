@@ -1,9 +1,74 @@
 labs:
-
+3-1:
+    sudo tar cfvz etc.tar.gz /etc/
+    sudo tar cfvj etc.tar.bz2 /etc/
+    mkdir etc_bz2 etc_gz
+    tar xfva etc.tar.bz2 -C etc_bz2
+    tar xfva etc.tar.gz -C etc_gz
+3-2:
+    vim
+    :w vipractice
+    :set number
+    shift + V to highlight and copy 2-3 with y
+    p to paste
+    shift + V to cut line 3 with x
+    P to paste in line 1
+    cat .bash_profile >> vipractice
+    :%s/Profile/Pro File/
+    shift + V and dd to delete lines
+3-3:
+    mkdir 3-3d
+    touch 3-3
+    ls -l
+    mv 3-3d /var/log
+    mv 3-3d /tmp
+    cp 3-3 3-3_2
+    rm -R 3-3* 
+4-1:
+    touch file11
+    mkdir dir11
+    ll
+    umask
+    umask -S u=rwx,g=r,o=w
+    touch file22
+    mkdir dir22
+    ll
+    chmod 642 file11
+    chmod 775 dir22/
+4-2:
+    mkdir /sdir
+    groupadd sgrp
+    useradd -m user1000
+    useradd -m user2000
+    usermod -a -G sgrp user1000
+    usermod -a -G sgrp user2000
+    chown :sgrp /sdir/
+    chmod g+rwx /sdir/
+    chmod o-rwx /sdir
+    chmod +t sdir/
+    chmod g+s sdir/
+    su - user1000
+    echo something > /sdir/somefile
+    exit
+    su - user2000
+    echo something else >> /sdir/somefile
+    cat /sdir/somefile
+    rm /sdir/somefile
 4-3:
     find -mmin -300 | xargs file
+    #OR:
+    find / -mmin -300 -type f -printf "%p - %y\n"
+    find / -mmin -300 -type p -type s -printf "%p - %y\n"
 4-4:
     find /usr -atime -100 -size -5M -user root
+4-5:
+    touch /tmp/testfile
+    useradd -m user2000 user3000 user4000
+    setfacl -m u:user2000:7,u:user3000:6,u:user4000:4 testfile
+    setfacl -x u:user2000 testfile
+    getfacl testfile
+    setfacl -b testfile
+    getfacl testfile
 5-3:
     useradd -u 4100 -b /usr user4100
     useradd user4200
