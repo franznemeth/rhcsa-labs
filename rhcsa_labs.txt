@@ -425,3 +425,46 @@ labs:
     fi
 23-1:
     useradd -m conadm
+    sudo -u conadm -i
+    sudo subscription-manager register
+    subscription-manager subscribe
+    sudo dnf module install container-tools
+    podman -v
+23-2:
+    podman pull rhel7
+    podman inspect 9a3387c8f6bc9b63b119dc61ddbaed6bb20795a7b187908ca1b5ecabc5c19aac
+    sudo podman run -it --name root-cont-port -p 80:8080 rhel7:latest
+    # outside of container
+    sudo ss -tlnp
+23-3:
+    podman run -it -d -e VAR1=lab1 -e VAR2=lab2 ubi8
+    podman ps
+    podman exec d92cbc02787c env
+    podman kill d92cbc02787c
+    podman rm d92cbc02787c3f657711aab6ec862244e8ddc2a83a094fdbc41b7aea899636cd
+23-4:
+    sudo mkdir /host_perm1
+    sudo touch /host_perm1/str1
+    sudo chmod -R 777 host_perm1/
+    podman run -it --name rootlest-cont-str -v /host_perm1:/cont_perm1:rw rhel7
+    sudo semanage fcontext -a -t container_file_t '/host_perm1(/.*)?
+    sudo restorecon -R -v /host_perm1
+23-5:
+    sudo mkdir /host_perm2
+    sudo semanage fcontext -a -t container_file_t '/host_perm2(/.*)?'
+    sudo restorecon -R -v /host_perm2/
+    sudo chmor -R 777 /host_perm2
+    podman run -it --name rootlest-cont-adv -p 9000:8080 -e HISTSIZE=100 -e MYNAME=RedHat -v /host_perm2:/cont_perm2:rw rhel
+23-6:
+    podman generate systemd rootlest-cont-adv -n --new > rootless-cont-adv.service
+    sudo mv rootless-cont-adv.service /etc/systemd/system/
+    sudo systemctl daemon-reload
+    podman rm 01881b3f9459
+    restorecon -R -v container-rootless-cont-adv.service
+    systemctl enable container-rootless-cont-adv.service
+23-7:
+    sudo podman generate systemd root-cont-port -n --new | sudo tee /etc/systemd/system/container-root-cont-port.service
+    sudo systemctl daemon-reload
+    sudo podman kill root-cont-port
+    sudo podman rm root-cont-port
+    sudo systemctl enable --now container-root-cont-port.service
